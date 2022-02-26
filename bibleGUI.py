@@ -54,7 +54,21 @@ def hasonlyspaces(string):
     return True
   else:
     return False
-layout = [[
+def create_range_window():
+  rangelayout = [
+      [sg.Text('Select the book and/or chapter of the Bible to search in.')]
+      ,[
+      sg.Text('Book: '),  
+      sg.Combo(cleanlist(files),key='--book--',size=(20,5),enable_events=True)
+      ,sg.Text('Chapter: ')
+      ,sg.Combo([],key='--chapter--',size=(4,5),enable_events=True)],
+      [sg.Button('set range',key='--submit-search-range-values--',size=(7,2))]
+      ,[sg.Text('All the searches you perform will be in the above selected\nrange until you change it.')]
+      ,[sg.Button('reset to defuault',key='--reset-to-defualt--',size=(12,2))]
+    ]
+  return sg.Window('select range to search',rangelayout,size=(384,255),modal=True,icon=r'C:\Users\Joel\.vscode\python_projects\BibleApp\blackbible.ico',finalize=True)
+def create_main_window():
+  layout = [[
 [sg.Text('enter search keywords: ',tooltip='enter search keywords to search entire bible', key='intro',font='Corbel')
 ,sg.Input(size=(40,4),right_click_menu=['&Right',['copy','paste','search range']], enable_events=True,key='!searched_term!',font='Corbel')
 ,sg.Button('clear',key='clear',tooltip='clear search bar',font='Fixedsys')
@@ -67,8 +81,9 @@ layout = [[
 ]
 ,[sg.Multiline(f'{open("Bible.txt").read()}',key='RESULT',right_click_menu=['&Right', ['copy', 'read-aloud','bookmark']],font='Consolas',size=(300,200),disabled=True)]
 ]]
-window = sg.Window('Desktop Bible', layout,icon=r'C:\Users\Joel\.vscode\python_projects\BibleApp\blackbible.ico', size=(1000,700),finalize=True)
-window.Maximize()
+  return sg.Window('Desktop Bible', layout,icon=r'C:\Users\Joel\.vscode\python_projects\BibleApp\blackbible.ico', size=(1000,700),finalize=True).Maximize()
+
+  
 def nums(first_number, last_number, step=1):
     '''This function is for loops.'''
     return range(first_number, last_number+1, step)
@@ -78,11 +93,16 @@ def strlist(list):
   for i in list:
     a.append(str(i))
   return a
+window1, window2 = create_main_window(), None
 while True:
   open('bibleSearchResult.txt','w').write('')
-  event, values = window.read()
+  window, event, values = sg.read_all_windows()
   if event == sg.WIN_CLOSED:
-    break
+    if window == window2:       # if closing winow 2, mark as closed
+      window2.close()
+      window2 = None    
+    else:         # under all other conditions, exit the program
+      break
   elif event == 'clear':
     window['!searched_term!'].update('')
   elif event == 'home':
@@ -129,37 +149,18 @@ while True:
     #code to paste
     text = pyperclip.paste()
     window['!searched_term!'].update(text)
-  elif event == 'search range':
-    rangelayout = [
-      [sg.Text('Select the book and/or chapter of the Bible to search in.')]
-      ,[
-      sg.Text('Book: '),  
-      sg.Combo(cleanlist(files),key='--book--',size=(20,5),enable_events=True)
-      ,sg.Text('Chapter: ')
-      ,sg.Combo([],key='--chapter--',size=(4,5),enable_events=True)],
-      [sg.Button('set range',key='--submit-search-range-values--',size=(7,2))]
-      ,[sg.Text('All the searches you perform will be in the above selected\nrange until you change it.')]
-      ,[sg.Button('reset to defuault',key='--reset-to-defualt--',size=(12,2))]
-    ]
-    searchrangewindow = sg.Window('select range to search',rangelayout,size=(384,255),modal=True,icon=r'C:\Users\Joel\.vscode\python_projects\BibleApp\blackbible.ico')
-    while True:
-      #searchrangewindow event loop
-      event2, values2 = searchrangewindow.read()
-      if event2 == sg.WIN_CLOSED:
-        break
-      elif event2 == '--book--':
-        bookrange = values2['--book--']
-        defaultrange = files
-        files = files[files.index(f'{bookrange}.txt'.lower().replace(' ','_'))]
-        bookfrombookrange = open(f'{bookrange}.txt').readlines()
-        numofchapsinbook = bookfrombookrange[-1].split(':')[0]
-        valuesforchapbox = []
-        for e in nums(1,int(numofchapsinbook)):
-          valuesforchapbox.append(e)
-        searchrangewindow['--chapter--'].update(values=valuesforchapbox)
-        break
-        searchrangewindow.close()
-    continue
+  elif event == 'search range' and not window2:
+    window2 = create_range_window()
+  elif event == '--book--':
+    bookrange = values['--book--']
+    defaultrange = files
+    files = files[files.index(f'{bookrange}.txt'.lower().replace(' ','_'))]
+    bookfrombookrange = open(f'{bookrange}.txt').readlines()
+    numofchapsinbook = bookfrombookrange[-1].split(':')[0]
+    valuesforchapbox = []
+    for e in nums(1,int(numofchapsinbook)):
+      valuesforchapbox.append(e)
+    window2['--chapter--'].update(values=valuesforchapbox)
   elif event == 'enteredSEARCH':
     search_input = values['!searched_term!']
     multiple_results = []
@@ -208,3 +209,4 @@ while True:
           else:  
             window['howMany'].update(value = f"{len(multiple_results)} results found for '{search_input}'")
             continue
+window.close()
