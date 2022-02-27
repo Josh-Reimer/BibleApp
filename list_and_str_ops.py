@@ -53,11 +53,12 @@ def remove_underscore(s):
   return s.replace("_", " ")
 #//
 def clean(str):
-  '''This function takes a string and replaces underscores with a space and the file extension .txt with an emptey string. It then returns the modified sting with all lower case.'''
+  '''This function takes a string and replaces underscores with a space and the file extension .txt with an empty string. It then returns the modified string with all lower case.'''
   str = str.replace("_", " ")
   return str.replace(".txt", "").lower()
 #//
 def disclean(str):
+  '''This function takes a string and replaces spaces with underscores, puts everything in lower case, and adds the .txt extension.'''
   str = str.replace(" ", "_").lower()
   return f"{str}.txt"
 #//

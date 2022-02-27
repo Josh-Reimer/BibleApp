@@ -32,6 +32,28 @@ file.close()
 #******favorite fonts********
 #Corbel,LucidaConsole,and Consolas all look like monospace
 #Fixedsys is a my favorite
+def linearsearch(searchkey):
+  #argument should be search_input
+  '''This is the initial search engine for the BibleApp.\n
+  It takes a string as input and ouputs to the pysimplegui window
+  '''
+  for book in files:
+    verses = open(book).readlines()
+    book = clean(book)
+    for verse in verses:
+      if searchkey.lower() in verse.lower(): 
+        multiple_results.append(f"{book}\n{verse}")
+  for result in multiple_results:
+    open("bibleSearchResult.txt",'a').write(f'{result}')
+  window['RESULT'].update(value = f"{open('bibleSearchResult.txt').read()}")
+  if len(multiple_results) == 0:
+    window['howMany'].update(value = f"no results found for '{searchkey}'")
+    window['RESULT'].update(value="Sorry, the keywords you searched for are not in the Bible. Try searching the same keyword(s) with different spacing or punctuation.(The search is not case sensitive.)")
+  elif len(multiple_results) == 1:        
+    window['howMany'].update(value = f"{len(multiple_results)} result found for '{searchkey}'")
+  else:  
+    window['howMany'].update(value = f"{len(multiple_results)} results found for '{searchkey}'")
+
 def clean(str):
   '''This function is similar to the clean() function in list_and_str_ops module except that it uses .title() instead of .lower()'''
   str = str.replace("_", " ")
@@ -57,16 +79,15 @@ def hasonlyspaces(string):
 def create_range_window():
   rangelayout = [
       [sg.Text('Select the book and/or chapter of the Bible to search in.')]
-      ,[
-      sg.Text('Book: '),  
-      sg.Combo(cleanlist(files),key='--book--',size=(20,5),enable_events=True)
-      ,sg.Text('Chapter: ')
-      ,sg.Combo([],key='--chapter--',size=(4,5),enable_events=True)],
-      [sg.Button('set range',key='--submit-search-range-values--',size=(7,2))]
+      ,[sg.Text('starting book: ')]  
+      ,[sg.Combo(cleanlist(files),key='--book1--',size=(20,5),enable_events=True)]
+      ,[sg.Text('ending book: ')]
+      ,[sg.Combo(cleanlist(files),key='--book2--',size=(20,5),enable_events=True)]
+      ,[sg.Button('set range',key='--submit-search-range-values--',size=(7,2))]
       ,[sg.Text('All the searches you perform will be in the above selected\nrange until you change it.')]
       ,[sg.Button('reset to defuault',key='--reset-to-defualt--',size=(12,2))]
     ]
-  return sg.Window('select range to search',rangelayout,size=(384,255),modal=True,icon=r'C:\Users\Joel\.vscode\python_projects\BibleApp\blackbible.ico',finalize=True)
+  return sg.Window('select range to search',rangelayout,size=(384,255),modal=True,icon=r'C:\Users\Joel\Documents\Josh_coding_projects\python_projects\BibleApp\blackbible.ico',finalize=True)
 def create_main_window():
   layout = [[
 [sg.Text('enter search keywords: ',tooltip='enter search keywords to search entire bible', key='intro',font='Corbel')
@@ -81,7 +102,7 @@ def create_main_window():
 ]
 ,[sg.Multiline(f'{open("Bible.txt").read()}',key='RESULT',right_click_menu=['&Right', ['copy', 'read-aloud','bookmark']],font='Consolas',size=(300,200),disabled=True)]
 ]]
-  return sg.Window('Desktop Bible', layout,icon=r'C:\Users\Joel\.vscode\python_projects\BibleApp\blackbible.ico', size=(1000,700),finalize=True).Maximize()
+  return sg.Window('Desktop Bible', layout,icon=r'C:\Users\Joel\Documents\Josh_coding_projects\python_projects\BibleApp\blackbible.ico', size=(1000,700),finalize=True).Maximize()
 
   
 def nums(first_number, last_number, step=1):
@@ -96,7 +117,7 @@ def strlist(list):
 window1, window2 = create_main_window(), None
 while True:
   open('bibleSearchResult.txt','w').write('')
-  window, event, values = sg.read_all_windows()
+  window, event, values = sg.read_all_windows()           #read signals from all windows
   if event == sg.WIN_CLOSED:
     if window == window2:       # if closing winow 2, mark as closed
       window2.close()
@@ -151,16 +172,11 @@ while True:
     window['!searched_term!'].update(text)
   elif event == 'search range' and not window2:
     window2 = create_range_window()
-  elif event == '--book--':
-    bookrange = values['--book--']
-    defaultrange = files
-    files = files[files.index(f'{bookrange}.txt'.lower().replace(' ','_'))]
-    bookfrombookrange = open(f'{bookrange}.txt').readlines()
-    numofchapsinbook = bookfrombookrange[-1].split(':')[0]
-    valuesforchapbox = []
-    for e in nums(1,int(numofchapsinbook)):
-      valuesforchapbox.append(e)
-    window2['--chapter--'].update(values=valuesforchapbox)
+  elif event == '--submit-search-range-values--':      #submitting the search range values in the search range window
+    #the code in this block submits the values in the search range window and then closes the window
+    bookforsearchrange = values['--book1--']
+    print(f'<{bookforsearchrange}>')
+    window2.close()
   elif event == 'enteredSEARCH':
     search_input = values['!searched_term!']
     multiple_results = []
@@ -172,41 +188,9 @@ while True:
     elif search_input == " " or hasonlyspaces(search_input) or len(search_input) <= 2:
       longsearch = sg.popup_ok_cancel("You are about to initiate a long search.Searches that consist of spaces only or less than two characters usually take a while. Would you like to continue?")
       if longsearch == 'OK':
-        for book in files:
-          verses = open(book).readlines()
-          book = clean(book)
-          for verse in verses:
-            if search_input.lower() in verse.lower(): 
-              multiple_results.append(f"{book}\n{verse}")
-        for result in multiple_results:
-          open("bibleSearchResult.txt",'a').write(f'{result}')
-        window['RESULT'].update(value = f"{open('bibleSearchResult.txt').read()}")
-        if len(multiple_results) == 0:
-          window['howMany'].update(value = f"no results found for '{search_input}'")
-          window['RESULT'].update(value="Sorry, the keywords you searched for are not in the Bible. Try searching the same keyword(s) with different spacing or punctuation.(The search is not case sensitive.)")
-        elif len(multiple_results) == 1:        
-          window['howMany'].update(value = f"{len(multiple_results)} result found for '{search_input}'")
-        else:  
-          window['howMany'].update(value = f"{len(multiple_results)} results found for '{search_input}'")
-          continue
+        linearsearch(search_input)
       elif longsearch == 'Cancel':
         continue
     else:
-      for book in files:
-          verses = open(book).readlines()
-          book = clean(book)
-          for verse in verses:
-            if search_input.lower() in verse.lower(): 
-              multiple_results.append(f"{book}\n{verse}")
-          for result in multiple_results:
-            open("bibleSearchResult.txt",'a').write(f'{result}')
-          window['RESULT'].update(value = f"{open('bibleSearchResult.txt').read()}")
-          if len(multiple_results) == 0:
-            window['howMany'].update(value = f"no results found for '{search_input}'")
-            window['RESULT'].update(value="Sorry, the keywords you searched for are not in the Bible. Try searching the same keyword(s) with different spacing or punctuation.(The search is not case sensitive.)")
-          elif len(multiple_results) == 1:        
-            window['howMany'].update(value = f"{len(multiple_results)} result found for '{search_input}'")
-          else:  
-            window['howMany'].update(value = f"{len(multiple_results)} results found for '{search_input}'")
-            continue
+      linearsearch(search_input)
 window.close()
