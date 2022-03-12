@@ -32,6 +32,11 @@ file.close()
 #******favorite fonts********
 #Corbel,LucidaConsole,and Consolas all look like monospace
 #Fixedsys is a my favorite
+def setsearchrange(startbook,endbook,listoffiles):
+  indexoffirstbook = listoffiles.index(f'{list.disclean(startbook)}')
+  indexofendbook = listoffiles.index(f'{list.disclean(endbook)}')
+  files = listoffiles[indexoffirstbook:indexofendbook+1]
+  return files
 def linearsearch(searchkey):
   #argument should be search_input
   '''This is the initial search engine for the BibleApp.\n
@@ -87,7 +92,7 @@ def create_range_window():
       ,[sg.Text('All the searches you perform will be in the above selected\nrange until you change it.')]
       ,[sg.Button('reset to defuault',key='--reset-to-defualt--',size=(12,2))]
     ]
-  return sg.Window('select range to search',rangelayout,size=(384,255),modal=True,icon=r'C:\Users\Joel\Documents\Josh_coding_projects\python_projects\BibleApp\blackbible.ico',finalize=True)
+  return sg.Window('select range to search',rangelayout,size=(384,300),modal=True,icon=r'C:\Users\Joel\Documents\Josh_coding_projects\python_projects\BibleApp\blackbible.ico',finalize=True)
 def create_main_window():
   layout = [[
 [sg.Text('enter search keywords: ',tooltip='enter search keywords to search entire bible', key='intro',font='Corbel')
@@ -102,7 +107,7 @@ def create_main_window():
 ]
 ,[sg.Multiline(f'{open("Bible.txt").read()}',key='RESULT',right_click_menu=['&Right', ['copy', 'read-aloud','bookmark']],font='Consolas',size=(300,200),disabled=True)]
 ]]
-  return sg.Window('Desktop Bible', layout,icon=r'C:\Users\Joel\Documents\Josh_coding_projects\python_projects\BibleApp\blackbible.ico', size=(1000,700),finalize=True).Maximize()
+  return sg.Window('Desktop Bible', layout,icon=r'C:\Users\Joel\Documents\Josh_coding_projects\python_projects\BibleApp\blackbible.ico', size=(1000,700),finalize=True,resizable=True).Maximize()
 
   
 def nums(first_number, last_number, step=1):
@@ -170,12 +175,23 @@ while True:
     #code to paste
     text = pyperclip.paste()
     window['!searched_term!'].update(text)
-  elif event == 'search range' and not window2:
+  elif event == 'search range':   #and not window2
     window2 = create_range_window()
   elif event == '--submit-search-range-values--':      #submitting the search range values in the search range window
     #the code in this block submits the values in the search range window and then closes the window
-    bookforsearchrange = values['--book1--']
-    print(f'<{bookforsearchrange}>')
+    startingbook = values['--book1--']
+    endingbook = values['--book2--']
+    if startingbook == '' and endingbook == '':
+      sg.popup('You must select a book!',icon=r'C:\Users\Joel\Documents\Josh_coding_projects\python_projects\BibleApp\blackbible.ico')
+    elif startingbook == '' or endingbook == '':
+      sg.popup('You must fill in all the choices!',icon=r'C:\Users\Joel\Documents\Josh_coding_projects\python_projects\BibleApp\blackbible.ico')
+    elif files.index(list.disclean(startingbook)) > files.index(list.disclean(endingbook)):
+      sg.popup('The end of the range comes before the start of the range.\nFor best results, please change this.',icon=r'C:\Users\Joel\Documents\Josh_coding_projects\python_projects\BibleApp\blackbible.ico')
+    else:
+      files = setsearchrange(startingbook,endingbook,files)
+      window2.close()
+  elif event == '--reset-to-defualt--':
+    files = ["genesis.txt", "exodus.txt", "leviticus.txt", "numbers.txt", "deuteronomy.txt", "joshua.txt", "judges.txt", "ruth.txt", "first_samuel.txt", "second_samuel.txt", "first_kings.txt", "second_kings.txt", "first_chronicles.txt", "second_chronicles.txt", "ezra.txt", "nehemiah.txt", "esther.txt", "job.txt", "psalms.txt", "proverbs.txt", "eccliasiastes.txt", "song_of_solomon.txt", "isaiah.txt", "jeremiah.txt", "lamentations.txt", "ezekial.txt", "daniel.txt", "hosea.txt", "joel.txt", "amos.txt", "obadiah.txt", "jonah.txt", "micah.txt", "nahum.txt", "habakkuk.txt", "zephaniah.txt", "haggai.txt", "zechariah.txt", "malachi.txt", "matthew.txt", "mark.txt", "luke.txt", "john.txt", "acts.txt", "romans.txt", "first_corinthians.txt", "second_corinthians.txt", "galatians.txt", "ephesians.txt", "philipians.txt", "colossians.txt", "first_thesselonians.txt", "second_thesselonians.txt", "first_timothy.txt", "second_timothy.txt", "titus.txt", "philemon.txt", "hebrews.txt", "james.txt", "first_peter.txt", "second_peter.txt", "first_john.txt", "second_john.txt", "third_john.txt", "jude.txt", "revelation.txt"]
     window2.close()
   elif event == 'enteredSEARCH':
     search_input = values['!searched_term!']
@@ -186,7 +202,7 @@ while True:
     elif search_input == '':
       continue
     elif search_input == " " or hasonlyspaces(search_input) or len(search_input) <= 2:
-      longsearch = sg.popup_ok_cancel("You are about to initiate a long search.Searches that consist of spaces only or less than two characters usually take a while. Would you like to continue?")
+      longsearch = sg.popup_ok_cancel("You are about to initiate a long search.Searches that consist of spaces only or less than two characters usually take a while. Would you like to continue?",icon=r'C:\Users\Joel\Documents\Josh_coding_projects\python_projects\BibleApp\blackbible.ico')
       if longsearch == 'OK':
         linearsearch(search_input)
       elif longsearch == 'Cancel':
