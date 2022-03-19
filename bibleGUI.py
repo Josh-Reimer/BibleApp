@@ -105,7 +105,7 @@ def create_main_window():
 ,sg.Combo([],key='chaptersInBook',tooltip='choose chapter from selected book at left to be displayed',enable_events=True,size=(3,7),background_color='silver')
 ,sg.Combo([],key='versesInChapter',tooltip='choose verse from chapter of book selected at left to be displayed',enable_events=True,size=(3,7),background_color='silver')
 ]
-,[sg.Multiline(f'{open("Bible.txt").read()}',key='RESULT',right_click_menu=['&Right', ['copy', 'read-aloud','bookmark']],font='Consolas',size=(300,200),disabled=True)]
+,[sg.Multiline(f'{open("Bible.txt").read()}',key='RESULT',right_click_menu=['&Right', ['copy']],font='Consolas',size=(300,200),disabled=True)]
 ]]
   return sg.Window('Desktop Bible', layout,icon=r'C:\Users\Joel\Documents\Josh_coding_projects\python_projects\BibleApp\blackbible.ico', size=(1000,700),finalize=True,resizable=True).Maximize()
 
@@ -167,8 +167,9 @@ while True:
   elif event == 'copy':
     try:
       selection = window['RESULT'].Widget.selection_get()
+      
     except sg.tk.TclError:
-      break
+      selection = 'nothing on the clipboard!'
     #code to copy to clipboard
     pyperclip.copy(selection)
   elif event == 'paste':
