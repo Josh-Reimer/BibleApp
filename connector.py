@@ -4,11 +4,17 @@ from BibleFileNames import files
 import list_and_str_ops as list 
 from charEliminator import onlyVerses,remove_only_chars
 import sys
-import colorama
-from colorama import init
-from termcolor import colored
 import os
 
+colorful = True
+
+try:
+	import colorama
+	from colorama import init
+	from termcolor import colored
+except:
+	colorful = False
+	print("for a colored terminal, use pip to install colorama and termcolor")
 '''
 DO NOT DELETE!
 Currently, connector.py is the final version of the command
@@ -17,9 +23,14 @@ It is a coloured version.
 '''
 
 os.system('cls' if os.name == 'nt' else 'clear') # multi-platform clear statement
-print(colored('Welcome to the python Bible App!','red'))
-print(colored('With this application you can do the following things:','cyan'))
-print(colored('1.search the Bible for keywords or phrases\n2.navigate to a specific scriptual reference\n3.print an entire book or chapter to the screen','magenta', attrs=['bold']))
+if colorful:
+	print(colored('Welcome to the python Bible App!','red'))	
+	print(colored('With this application you can do the following things:','cyan'))
+	print(colored('1.search the Bible for keywords or phrases\n2.navigate to a specific scriptual reference\n3.print an entire book or chapter to the screen','magenta', attrs=['bold']))
+else:
+	print('Welcome to the python Bible App!')
+	print('With this application you can do the following things:')
+	print('1.search the Bible for keywords or phrases\n2.navigate to a specific scriptual reference\n3.print an entire book or chapter to the screen')
 print('\nto search type "search"\nto navigate to specific references, type "ref"\nafter each command press enter to see results\nat any time type exit() to go back to command prompt or exit application\n')
 while True:
     appfunction = input('what do you want to do?\n-->')
